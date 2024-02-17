@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <title>Socket.IO chat</title>
+</head>
+
+<body>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" placeholder="send a message" autocomplete="off" /><button>Send</button>
+    </form>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+    const socket = io();
+    const input = document.getElementById('input');
+    const form = document.querySelector('form');
+    const messagesList = document.getElementById('messages');
+
+    // Cuando se envía un mensaje desde el formulario
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = input.value.trim(); // Eliminar espacios en blanco al inicio y al final
+    if (message) {
+        socket.emit('chat message', message);
+        input.value = '';
+    }
+});
+
+// Cuando la página se carga, recuperar los mensajes almacenados en localStorage
+window.onload = () => {
+    const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    messages.forEach(message => {
+        appendMessage(message);
+    });
+};
+
+// Escuchar mensajes del servidor y mostrarlos en el chat
+socket.on('chat message', function (msg) {
+    appendMessage(msg);
+});
+
+// Función para agregar un mensaje al chat
+function appendMessage(message) {
+    const item = document.createElement('li');
+    item.textContent = message;
+    messagesList.appendChild(item);
+
+    // Guardar el mensaje en localStorage
+    const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    messages.push(message);
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
+}
+</script>
+
+</html>
